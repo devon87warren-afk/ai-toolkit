@@ -1,0 +1,90 @@
+---
+job: extension
+config:
+  # this name will be the folder and filename name
+  name: "Trish 1.0"
+  process:
+    - type: 'sd_trainer'
+      # root folder to save training sessions/samples/weights
+      training_folder: "output"
+      # uncomment to see performance stats in the terminal every N steps
+#      performance_log_every: 1000
+      device: cuda:0
+      # if a trigger word is specified, it will be added to captions of training data if it does not already exist
+      # alternatively, in your captions you can add [trigger] and it will be replaced with the trigger word
+      # NOTE: Trigger word is commented out because cache_text_embeddings is enabled
+      # Make sure to manually include your trigger word in all caption files instead
+      # trigger_word: "p3r5on"
+      network:
+        type: "lora"
+        linear: 32
+        linear_alpha: 32
+      save:
+        dtype: float16 # precision to save
+        save_every: 250 # save every this many steps
+        max_step_saves_to_keep: 6 # how many intermittent saves to keep
+      datasets:
+        # datasets are a folder of images. captions need to be txt files with the same name as the image
+        # for instance image2.jpg and image2.txt. Only jpg, jpeg, and png are supported currently
+        # images will automatically be resized and bucketed into the resolution specified
+        # For RunPod (Linux): use forward slashes and relative/absolute Linux paths
+        # Windows local: "C:\\path\\to\\images\\folder"
+        # RunPod: "/workspace/ai-toolkit/datasets/tifolora" or "datasets/tifolora"
+        - folder_path: "datasets/tifolora"
+          caption_ext: "txt"
+          # default_caption: "a person" # if caching text embeddings, if you dont have captions, this will get cached
+          caption_dropout_rate: 0.1  # will drop out the caption 10% of time
+          shuffle_tokens: false  # shuffle caption order, split by commas
+          cache_latents_to_disk: true  # leave this true unless you have a large dataset
+          # if you OOM, 1024 may be too much, but should work
+          resolution: [ 512, 768, 1024 ]  # qwen image enjoys multiple resolutions
+      train:
+        batch_size: 1
+        # caching text embeddings is required for 24GB
+        cache_text_embeddings: true
+        cache_text_encoder_outputs: true  # important for memory optimization with Qwen
+
+        steps: 3000  # total number of steps to train 500 - 4000 is a good range (adjust based on dataset size)
+        gradient_accumulation: 1
+        train_unet: true
+        train_text_encoder: false  # probably won't work with qwen image
+        gradient_checkpointing: true  # need the on unless you have a ton of vram
+        noise_scheduler: "flowmatch" # for training only
+        optimizer: "adamw8bit"
+        lr: 1e-4
+        # uncomment this to skip the pre training sample
+#        skip_first_sample: true
+        # uncomment to completely disable sampling
+#        disable_sampling: true
+        dtype: bf16
+      model:
+        # huggingface model name or path
+        name_or_path: "Qwen/Qwen-Image"
+        arch: "qwen_image"
+        quantize: true
+        # qtype_te: "qfloat8" Default float8 qquantization
+        # to use the ARA use the | pipe to point to hf path, or a local path if you have one.
+        # 3bit is required for 24GB
+        qtype: "uint3|ostris/accuracy_recovery_adapters/qwen_image_torchao_uint3.safetensors"
+        quantize_te: true
+        qtype_te: "qfloat8"
+        low_vram: true
+      sample:
+        sampler: "flowmatch" # must match train.noise_scheduler
+        sample_every: 250 # sample every this many steps
+        width: 1024
+        height: 1024
+        prompts:
+          - "a woman with dirty blonde hair, posing sexually with minimal clothes on"
+          - "a woman holding a coffee cup, in a beanie, sitting at a cafe"
+          - "a woman is a DJ at a night club, fish eye lens, smoke machine, lazer lights, holding a martini"
+         
+        neg: ""
+        seed: 42
+        walk_seed: true
+        guidance_scale: 3
+        sample_steps: 25
+# you can add any additional meta info here. [name] is replaced with config name at top
+meta:
+  name: "[name]"
+  version: '1.0'

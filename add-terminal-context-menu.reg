@@ -1,0 +1,25 @@
+Windows Registry Editor Version 5.00
+
+; Add "Open in Terminal" to folder background
+[HKEY_CLASSES_ROOT\Directory\Background\shell\OpenTerminal]
+@="Open in Terminal"
+"Icon"="C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+
+[HKEY_CLASSES_ROOT\Directory\Background\shell\OpenTerminal\command]
+@="\"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -NoExit -Command \"Set-Location '%V'\""
+
+; Add "Open in Terminal" to folder right-click
+[HKEY_CLASSES_ROOT\Directory\shell\OpenTerminal]
+@="Open in Terminal"
+"Icon"="C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+
+[HKEY_CLASSES_ROOT\Directory\shell\OpenTerminal\command]
+@="\"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -NoExit -Command \"Set-Location '%V'\""
+
+; Add "Open in Terminal" to drive right-click
+[HKEY_CLASSES_ROOT\Drive\shell\OpenTerminal]
+@="Open in Terminal"
+"Icon"="C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+
+[HKEY_CLASSES_ROOT\Drive\shell\OpenTerminal\command]
+@="\"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe\" -NoExit -Command \"Set-Location '%V'\""

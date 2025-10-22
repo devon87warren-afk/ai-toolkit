@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  ai-toolkit:
+    image: ostris/aitoolkit:latest
+    restart: unless-stopped
+    ports:
+      - "8675:8675"
+    volumes:
+      # For Runpod network volume mounted at /workspace
+      - /workspace/.cache/huggingface:/root/.cache/huggingface/hub
+      - /workspace/ai-toolkit/aitk_db.db:/app/ai-toolkit/aitk_db.db
+      - /workspace/ai-toolkit/datasets:/app/ai-toolkit/datasets
+      - /workspace/ai-toolkit/output:/app/ai-toolkit/output
+      - /workspace/ai-toolkit/config:/app/ai-toolkit/config
+    environment:
+      - AI_TOOLKIT_AUTH=${AI_TOOLKIT_AUTH:-password}
+      - NODE_ENV=production
+      - TZ=UTC
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
